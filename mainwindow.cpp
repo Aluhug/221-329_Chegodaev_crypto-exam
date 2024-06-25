@@ -33,18 +33,47 @@ void MainWindow::openFile() {
         loadTransactions(fileName);
     }
 }
+bool checkTransaction(QJsonObject obj, QString &previousHash) {
+    QString amount = obj.value("amount").toString();
+    QString wallet = obj.value("wallet").toString();
+    QString date = obj.value("date").toString();
+    QString hash = obj.value("hash").toString();
+    QString sum = amount + wallet + date + previousHash;
+
+    qDebug() << previousHash;
+
+
+    if (amount.length() != 7){
+        return false;
+    }
+    if (wallet.length() != 6){
+        return false;
+    }
+    if (date.length() != 19) {
+        return false;
+    }
+
+
+    QByteArray computedHash = QCryptographicHash::hash(sum.toUtf8(), QCryptographicHash::Sha256);
+    previousHash = computedHash.toHex();
+    // qDebug() << hash + " || " + computedHash.toHex();
+
+    if (computedHash.toHex() != hash)
+        return false;
+    return true;
+}
 
 void MainWindow::loadTransactions(const QString &fileName) {
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, "Ошибка!", "Не удалось открыть файл");
+        QMessageBox::warning(this, "Ошибка", "Не удалось открыть файл");
         return;
     }
 
     QByteArray data = file.readAll();
     QJsonDocument doc(QJsonDocument::fromJson(data));
     if (doc.isNull() || !doc.isObject()) {
-        QMessageBox::warning(this, "Ошибка!", "Неверный формат файла");
+        QMessageBox::warning(this, "Ошибка", "Неверный формат файла");
         return;
     }
 
@@ -59,16 +88,11 @@ void MainWindow::loadTransactions(const QString &fileName) {
         QString date = obj.value("date").toString();
         QString hash = obj.value("hash").toString();
 
-        QString sum = amount + wallet + date + previousHash;
+        bool valid = !checkTransaction(obj, previousHash);
+        qDebug() << i << " " << valid;
 
-        QByteArray computedHash = QCryptographicHash::hash(sum.toUtf8(), QCryptographicHash::Sha256);
+        listWidget->addItem(createListItem(amount, wallet, date, hash, valid));
 
-        bool isInvalid = (computedHash.toHex() != hash);
-        listWidget->addItem(createListItem(amount, wallet, date, hash, isInvalid));
-
-        if (!isInvalid) {
-            previousHash = hash;
-        }
     }
 }
 
