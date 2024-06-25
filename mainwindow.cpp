@@ -82,6 +82,8 @@ void MainWindow::loadTransactions(const QString &fileName) {
                                      QCryptographicHash::hash("1", QCryptographicHash::Sha256),
                                      QCryptographicHash::hash("1", QCryptographicHash::Md5));
 
+    qDebug() << data;
+
     QJsonDocument doc(QJsonDocument::fromJson(data));
     if (doc.isNull() || !doc.isObject()) {
         QMessageBox::warning(this, "Ошибка", "Неверный формат файла");
@@ -142,8 +144,135 @@ void MainWindow::on_pushButton_clicked()
         qDebug() << "Пин неверен!";
     } else {
         qDebug() << "Пин верен!";
-        ui->stackedWidget->setCurrentIndex(0);
+        ui->stackedWidget->setCurrentWidget(ui->page);
         loadTransactions("transactions.json");
     }
+}
+
+
+void MainWindow::on_showAddMenu_clicked()
+{
+    ui->stackedWidget->setCurrentWidget(ui->page_3);
+}
+
+
+void MainWindow::on_addBtn_clicked()
+{
+    QString amount = ui->amountEdit->text();
+    QString wallet = ui->walletEdit->text();
+    QString date = ui->dateEdit->text();
+    QString prevHash = "";
+
+    if (transactions.size() > 0)
+        prevHash = transactions[transactions.size() - 1].toObject().value("hash").toString();
+
+    qDebug() << "prevHash: " << prevHash;
+
+    QJsonObject obj;
+    obj.insert("amount", amount);
+    obj.insert("wallet", wallet);
+    obj.insert("date", date);
+
+    QString sum = amount + wallet + date + prevHash;
+
+    QString hash = QCryptographicHash::hash(sum.toUtf8(), QCryptographicHash::Sha256).toHex();
+
+    obj.insert("hash", hash);
+
+    transactions.append(obj);
+
+    qDebug() << obj;
+
+    ui->stackedWidget->setCurrentWidget(ui->page);
+
+    listWidget->clear();
+
+    QString previousHash = "";
+    for (int i = 0; i < transactions.size(); ++i) {
+        QJsonObject obj = transactions[i].toObject();
+        QString amount = obj.value("amount").toString();
+        QString wallet = obj.value("wallet").toString();
+        QString date = obj.value("date").toString();
+        QString hash = obj.value("hash").toString();
+
+        bool valid = !checkTransaction(obj, previousHash);
+        qDebug() << i << " " << valid;
+
+        listWidget->addItem(createListItem(amount, wallet, date, hash, valid));
+
+    }
+}
+
+
+void MainWindow::on_saveButton_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, "Открыть файл", "", "JSON Files (*.json)");
+
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, "Ошибка", "Не удалось открыть файл");
+        return;
+    }
+
+    QJsonObject obj;
+    obj.insert("transactions", transactions);
+
+    QJsonDocument doc(obj);
+
+    QByteArray encrypted;
+    QByteArray data = doc.toJson(QJsonDocument::Indented);
+
+
+
+    Encryptor::getInstance().encrypt(data, encrypted,
+                                     QCryptographicHash::hash("1", QCryptographicHash::Sha256),
+                                     QCryptographicHash::hash("1", QCryptographicHash::Md5));
+
+    QTextStream out(&file);
+    out << encrypted.toHex();
+    file.close();
+
+}
+
+
+void MainWindow::on_openButton_clicked()
+{
+
+}
+
+void MainWindow::checkRecordFields()
+{
+    if (ui->amountEdit->text().length() != 7) {
+        ui->addBtn->setEnabled(false);
+        return;
+    }
+    if (ui->walletEdit->text().length() != 6) {
+        ui->addBtn->setEnabled(false);
+        return;
+    }
+    if (ui->dateEdit->text().length() != 19) {
+        ui->addBtn->setEnabled(false);
+        return;
+    }
+    ui->addBtn->setEnabled(true);
+    return;
+}
+
+void MainWindow::on_amountEdit_textChanged(const QString &arg1)
+{
+    checkRecordFields();
+}
+
+
+void MainWindow::on_walletEdit_textChanged(const QString &arg1)
+{
+    checkRecordFields();
+}
+
+
+void MainWindow::on_dateEdit_textChanged(const QString &arg1)
+{
+    checkRecordFields();
 }
 
