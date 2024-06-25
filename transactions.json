@@ -1,0 +1,34 @@
+{
+    "transactions": [
+        {
+            "amount": "0005700",
+            "wallet": "123456",
+            "date": "2024.06.15_12:00:00",
+            "hash": "6dcde20cbb89713e4d4403af71e106f5bbb5f5e8a140800e5d914a90ee063d97"
+        },
+        {
+            "amount": "0001200",
+            "wallet": "654321",
+            "date": "2024.06.16_13:30:00",
+            "hash": "cd76879dd1aa36221b2121930ca7f53ed91be519a851b37d264f3cd5d5a7c97a"
+        },
+        {
+            "amount": "0009999",
+            "wallet": "111111",
+            "date": "2024.06.17_09:00:00",
+            "hash": "9762d73ee6b43d0fec681bf90509751cacad990cf8d14d631c4ed33694dce260"
+        },
+        {
+            "amount": "0001111",
+            "wallet": "222222",
+            "date": "2024.06.18_10:45:00",
+            "hash": "ef3f8e6fe6c6eaf05cc2f3f5c205e48aad13020cca43606666df9767fc428b08"
+        },
+        {
+            "amount": "0002222",
+            "wallet": "333333",
+            "date": "2024.06.19_15:20:00",
+            "hash": "3a8ef015c6b2d092cc722521476c7ac34ecf1e19116b16d869a4339512bb07bc"
+        }
+    ]
+}

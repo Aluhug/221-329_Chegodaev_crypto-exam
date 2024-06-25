@@ -37,14 +37,14 @@ void MainWindow::openFile() {
 void MainWindow::loadTransactions(const QString &fileName) {
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, "Ошибка", "Не удалось открыть файл");
+        QMessageBox::warning(this, "Ошибка!", "Не удалось открыть файл");
         return;
     }
 
     QByteArray data = file.readAll();
     QJsonDocument doc(QJsonDocument::fromJson(data));
     if (doc.isNull() || !doc.isObject()) {
-        QMessageBox::warning(this, "Ошибка", "Неверный формат файла");
+        QMessageBox::warning(this, "Ошибка!", "Неверный формат файла");
         return;
     }
 
