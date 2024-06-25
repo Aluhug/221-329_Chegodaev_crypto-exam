@@ -1,12 +1,12 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "encryptor.h"
 #include <QFileDialog>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QCryptographicHash>
 #include <QMessageBox>
-#include "encryptor.h"
 
 //key: 6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b
 //iv: c4ca4238a0b923820dcc509a6f75849b
@@ -22,7 +22,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(openButton, &QPushButton::clicked, this, &MainWindow::openFile);
 
-    loadTransactions("transactions.json");
 }
 
 MainWindow::~MainWindow()
@@ -36,6 +35,8 @@ void MainWindow::openFile() {
         loadTransactions(fileName);
     }
 }
+
+//Проверка траназкции на длину и хэш
 bool checkTransaction(QJsonObject obj, QString &previousHash) {
     QString amount = obj.value("amount").toString();
     QString wallet = obj.value("wallet").toString();
@@ -66,6 +67,7 @@ bool checkTransaction(QJsonObject obj, QString &previousHash) {
     return true;
 }
 
+//открытие файла с транзакциями
 void MainWindow::loadTransactions(const QString &fileName) {
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -119,3 +121,29 @@ QListWidgetItem* MainWindow::createListItem(const QString &amount, const QString
     }
     return item;
 }
+
+void MainWindow::on_pushButton_clicked()
+{
+    QFile pinFile("pin.txt");
+
+    if (!pinFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, "Ошибка", "Не удалось открыть файл пина");
+        return;
+    }
+
+    QByteArray pinFromFile = QByteArray::fromHex(pinFile.readAll());
+    QByteArray pinFromUser = ui->lineEdit->text().toUtf8();
+
+    QByteArray pinHash = QCryptographicHash::hash(pinFromUser, QCryptographicHash::Md5);
+
+    qDebug() << pinHash << " || " << pinFromFile;
+
+    if (pinHash != pinFromFile) {
+        qDebug() << "Пин неверен!";
+    } else {
+        qDebug() << "Пин верен!";
+        ui->stackedWidget->setCurrentIndex(0);
+        loadTransactions("transactions.json");
+    }
+}
+

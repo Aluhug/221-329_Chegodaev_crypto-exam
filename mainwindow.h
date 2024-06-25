@@ -21,6 +21,8 @@ public:
 private slots:
     void openFile();
 
+    void on_pushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     QListWidget *listWidget;
