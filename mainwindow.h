@@ -21,6 +21,22 @@ public:
 private slots:
     void openFile();
 
+    void on_pushButton_clicked();
+
+    void on_showAddMenu_clicked();
+
+    void on_addBtn_clicked();
+
+    void on_saveButton_clicked();
+
+    void on_openButton_clicked();
+
+    void on_amountEdit_textChanged(const QString &arg1);
+
+    void on_walletEdit_textChanged(const QString &arg1);
+
+    void on_dateEdit_textChanged(const QString &arg1);
+
 private:
     Ui::MainWindow *ui;
     QListWidget *listWidget;
@@ -28,6 +44,8 @@ private:
     QJsonArray transactions;
 
     void loadTransactions(const QString &fileName);
+    void checkRecordFields();
+
     QString computeHash(const QString &amount, const QString &wallet, const QString &date, const QString &previousHash);
     QListWidgetItem* createListItem(const QString &amount, const QString &wallet, const QString &date, const QString &hash, bool isInvalid);
 };
