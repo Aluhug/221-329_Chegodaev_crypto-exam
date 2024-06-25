@@ -1,12 +1,15 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
 #include <QFileDialog>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QCryptographicHash>
 #include <QMessageBox>
+#include "encryptor.h"
+
+//key: 6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b
+//iv: c4ca4238a0b923820dcc509a6f75849b
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -70,7 +73,13 @@ void MainWindow::loadTransactions(const QString &fileName) {
         return;
     }
 
-    QByteArray data = file.readAll();
+    QByteArray encrypted = QByteArray::fromHex(file.readAll());
+    QByteArray data;
+
+    Encryptor::getInstance().decrypt(encrypted, data,
+                                     QCryptographicHash::hash("1", QCryptographicHash::Sha256),
+                                     QCryptographicHash::hash("1", QCryptographicHash::Md5));
+
     QJsonDocument doc(QJsonDocument::fromJson(data));
     if (doc.isNull() || !doc.isObject()) {
         QMessageBox::warning(this, "Ошибка", "Неверный формат файла");
